@@ -4,7 +4,7 @@ import os
 import sys
 import pathlib
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, Listbox
 
 
 def chunk_reader(fobj, chunk_size=1024):
@@ -32,6 +32,7 @@ def get_hash(filename, first_chunk_only=False, hash=hashlib.sha1):
 
 
 def check_for_duplicates(paths, hash=hashlib.sha1):
+    list_of_duplicates = []
     hashes_by_size = defaultdict(list)  # dict of size_in_bytes: [full_path_to_file1, full_path_to_file2, ]
     hashes_on_1k = defaultdict(list)  # dict of (hash1k, size_in_bytes): [full_path_to_file1, full_path_to_file2, ]
     hashes_full = {}   # dict of full_file_hash: full_path_to_file_string
@@ -73,33 +74,39 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
     for __, files_list in hashes_on_1k.items():
         if len(files_list) < 2:
             continue    # this hash of fist 1k file bytes is unique, no need to spend cpy cycles on it
-
         for filename in files_list:
             try:
                 full_hash = get_hash(filename, first_chunk_only=False)
                 duplicate = hashes_full.get(full_hash)
                 if duplicate:
                     print("Duplicate found: {} and {}".format(filename, duplicate))
+                    list_of_duplicates.append(filename+"   <->   "+duplicate)
                 else:
                     hashes_full[full_hash] = filename
             except (OSError,):
                 # the file access might've changed till the exec point got here
                 continue
+    return list_of_duplicates
 
 
 if __name__ == "__main__":
-    # if sys.argv[1:]:
     root = tk.Tk()
     root.title('Duplicate photo/file finder')
     root.withdraw()  # hide the main window
     dir_name_crude = filedialog.askdirectory()
     dir_name = dir_name_crude.replace('/', '\\')
-# print(type(dir_name))
     dir_name = [dir_name]
     print(f"The selected directory is: {dir_name}")
-    check_for_duplicates(dir_name)
+    list_of_files_main = check_for_duplicates(dir_name)
     root.deiconify()
+    listbox = Listbox(root, height = 22,
+                  width = 120)
     root.geometry("750x400")
+    for i in list_of_files_main:
+        listbox.insert(list_of_files_main.index(i), i)
+
+    # pack the widgets
+    listbox.pack()
     root.mainloop()
     # else:
     #     print("Please pass the paths to check as parameters to the script")
