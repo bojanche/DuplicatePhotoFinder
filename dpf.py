@@ -3,7 +3,7 @@ import hashlib
 import os
 import sys
 import tkinter as tk
-from tkinter import filedialog, Listbox
+from tkinter import filedialog, Listbox, Scrollbar
 import threading
 
 list_of_duplicates = []
@@ -16,7 +16,11 @@ dir_name = dir_name_crude.replace('/', '\\')
 dir_name = [dir_name]
 print(f"The selected directory is: {dir_name}")
 root.deiconify()
-listbox = Listbox(root, height = 22, width = 120)
+scrollbar = Scrollbar(root, orient="vertical")
+listbox = Listbox(root, height = 22, width = 120, yscrollcommand=scrollbar.set)
+scrollbar.config(command=listbox.yview)
+
+scrollbar.pack(side="right", fill="y")
 root.geometry("750x400")
 
 
@@ -90,10 +94,10 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
             try:
                 full_hash = get_hash(filename, first_chunk_only=False)
                 duplicate = hashes_full.get(full_hash)
-                i=0
+                print(".", end="")
                 if duplicate:
                     print("Duplicate found: {} and {}".format(filename, duplicate))
-                    listbox.insert(i, filename+"   <->   "+duplicate)
+                    listbox.insert(0, filename+"   <->   "+duplicate)
                     # list_of_duplicates.append(filename+"   <->   "+duplicate)
                 else:
                     hashes_full[full_hash] = filename
@@ -112,7 +116,7 @@ x.start()
 
 # pack the widgets
 
-listbox.pack()
+listbox.pack(side="left",fill="both", expand=True)
 root.mainloop()
 # else:
 #     print("Please pass the paths to check as parameters to the script")
