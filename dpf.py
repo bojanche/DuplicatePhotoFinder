@@ -111,6 +111,7 @@ x.start()
 #     listbox.insert(list_of_duplicates.index(i), i)
 
 # pack the widgets
+
 listbox.pack()
 root.mainloop()
 # else:
