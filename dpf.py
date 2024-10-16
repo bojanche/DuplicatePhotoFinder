@@ -17,7 +17,7 @@ dir_name = [dir_name]
 print(f"The selected directory is: {dir_name}")
 root.deiconify()
 scrollbar = Scrollbar(root, orient="vertical")
-listbox = Listbox(root, height = 22, width = 120, yscrollcommand=scrollbar.set)
+listbox = Listbox(root, height = 22, width = 100, yscrollcommand=scrollbar.set)
 scrollbar.config(command=listbox.yview)
 
 scrollbar.pack(side="right", fill="y")
@@ -87,6 +87,7 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
                 continue
 
     # For all files with the hash on the 1st 1024 bytes, get their hash on the full file - collisions will be duplicates
+    i = 0
     for __, files_list in hashes_on_1k.items():
         if len(files_list) < 2:
             continue    # this hash of fist 1k file bytes is unique, no need to spend cpy cycles on it
@@ -94,16 +95,21 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
             try:
                 full_hash = get_hash(filename, first_chunk_only=False)
                 duplicate = hashes_full.get(full_hash)
-                print(".", end="")
+
                 if duplicate:
-                    print("Duplicate found: {} and {}".format(filename, duplicate))
-                    listbox.insert(0, filename+"   <->   "+duplicate)
+                    #print("Duplicate found: {} and {}".format(filename, duplicate))
+                    print(".", end="")
+                    listbox.insert(i, str(i+1)+". "+filename+"   <->   "+duplicate)
+                    i+=1
                     # list_of_duplicates.append(filename+"   <->   "+duplicate)
                 else:
+                    print(".", end="")
                     hashes_full[full_hash] = filename
+
             except (OSError,):
                 # the file access might've changed till the exec point got here
                 continue
+
 
 
 
@@ -116,7 +122,7 @@ x.start()
 
 # pack the widgets
 
-listbox.pack(side="left",fill="both", expand=True)
+listbox.pack(side="left",padx=20, fill="both", expand=True)
 root.mainloop()
 # else:
 #     print("Please pass the paths to check as parameters to the script")
