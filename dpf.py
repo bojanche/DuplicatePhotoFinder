@@ -9,6 +9,12 @@ import threading
 list_of_duplicates = []
 
 root = tk.Tk()
+
+def yview(*args):
+    """ scroll both listboxes together """
+    listbox1.yview(*args)
+    listbox2.yview(*args)
+
 root.title('Duplicate photo/file finder')
 root.withdraw()  # hide the main window
 dir_name_crude = filedialog.askdirectory()
@@ -16,12 +22,17 @@ dir_name = dir_name_crude.replace('/', '\\')
 dir_name = [dir_name]
 print(f"The selected directory is: {dir_name}")
 root.deiconify()
-scrollbar = Scrollbar(root, orient="vertical")
-listbox = Listbox(root, height = 22, width = 100, yscrollcommand=scrollbar.set)
-scrollbar.config(command=listbox.yview)
+scrollbar = Scrollbar(root, orient="vertical", command=yview)
+listbox1 = Listbox(root, width=70, height=35)
+listbox1.grid(row=1, column=2)
+listbox2 = Listbox(root, width=70, height=35)
+listbox2.grid(row=1, column=3)
+listbox1.config(yscrollcommand=scrollbar.set)
+listbox2.config(yscrollcommand=scrollbar.set)
 
-scrollbar.pack(side="right", fill="y")
-root.geometry("750x400")
+scrollbar.grid(row=1, column=1, sticky="ns")
+# scrollbar.pack(side="right", fill="y")
+root.geometry("880x600")
 
 
 def chunk_reader(fobj, chunk_size=1024):
@@ -97,9 +108,9 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
                 duplicate = hashes_full.get(full_hash)
 
                 if duplicate:
-                    #print("Duplicate found: {} and {}".format(filename, duplicate))
-                    print(".", end="")
-                    listbox.insert(i, str(i+1)+". "+filename+"   <->   "+duplicate)
+                    print("{}. Duplicate found: {} and {}".format(i+1, filename, duplicate))
+                    listbox1.insert(i, str(i+1)+". "+filename)
+                    listbox2.insert(i, str(i+1)+". "+duplicate)
                     i+=1
                     # list_of_duplicates.append(filename+"   <->   "+duplicate)
                 else:
@@ -122,7 +133,7 @@ x.start()
 
 # pack the widgets
 
-listbox.pack(side="left",padx=20, fill="both", expand=True)
+# listbox1.pack(side="left",padx=20, fill="both", expand=True)
 root.mainloop()
 # else:
 #     print("Please pass the paths to check as parameters to the script")
